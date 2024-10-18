@@ -1,58 +1,120 @@
 (define (domain windfarm)
-    (:requirements :strips :typing)
+    (:requirements :strips :typing :negative-preconditions)
 
     ; -------------------------------
     ; Types
     ; -------------------------------
+    ; Important to note that Fast Downward does not work with types
 
-    ; EXAMPLE
-
-    ; (:types
-    ;     parent_type
-    ;     child_type - parent_type
-
-    ; )
     (:types
-
+        Ship
+        UUV
+        Waypoint
+        Data
+        Sample
     )
 
     ; -------------------------------
     ; Predicates
     ; -------------------------------
 
-    ; EXAMPLE
-
-    ; (:predicates
-    ;     (no_arity_predicate)
-    ;     (one_arity_predicate ?p - parameter_type)
-    ; )
-
     (:predicates
+        (robotAt ?u - UUV ?w - Waypoint)
+        (hasData ?u - UUV ?d - Data)
+        (hasSample ?u - UUV ?s - Sample)
 
+        (path ?a - Waypoint ?b - Waypoint)
+
+        (shipSample ?f - Ship ?s - Sample)
+        (shipData ?f - Ship ?d - Data) 
+        (shipLocation ?f - Ship ?w - Waypoint)
+
+        (DataLocation ?d - Data ?w - Waypoint)
+        (SampleLocation ?s - Sample ?w - Waypoint)
     )
 
     ; -------------------------------
     ; Actions
     ; -------------------------------
 
-    ; EXAMPLE
+    (:action moveTo
+        :parameters 
+            (?a - Waypoint ?b - Waypoint ?u - UUV)
+        :precondition 
+            (and
+                (robotAt ?u ?a)
+                (path ?a ?b)
+            )
+        :effect 
+            (and
+                (not(robotAt ?u ?a))
+                (robotAt ?u ?b)
+            )
+    )
 
-    ; (:action action-template
-    ;     :parameters (?p - parameter_type)
-    ;     :precondition (and
-    ;         (one_arity_predicate ?p)
-    ;     )
-    ;     :effect 
-    ;     (and 
-    ;         (no_arity_predicate)
-    ;         (not (one_arity_predicate ?p))
-    ;     )
-    ; )
+    (:action collectSample
+        :parameters (?s - Sample ?w - Waypoint ?u - UUV)
+        :precondition 
+        (and
+            ; Commented out because I am unsure if a UUV can hold
+            ; more than one sample at a time. Not clarified in restrictions
+            ; Thus I will assume it can but just in case this would fix that.
+            ;
+            ;(not
+            ;    (exists (?s - Sample)(hasSample ?u ?s))
+            ;)
+            (robotAt ?u ?w)
+            (SampleLocation ?s ?w)
+        )
+        :effect 
+        (and
+            (hasSample ?u ?s)
+            (not (SampleLocation ?s ?w))
+        )
+    )
 
-    (:action action_name
-        :parameters ()
-        :precondition (and)
-        :effect (and)
+    (:action collectData
+        :parameters (?d - Data ?w - Waypoint ?u - UUV)
+        :precondition (and
+            (not 
+                (exists (?d - Data) (hasData ?u ?d)) 
+                ;Ensures that UUVs can only hold 1 piece of data
+            )
+            (robotAt ?u ?w)
+            (DataLocation ?d ?w)
+        )
+        :effect (and
+            (hasData ?u ?d)
+            (not (DataLocation ?d ?w))
+        )
+    )
+
+    (:action sendData
+        :parameters (?f - Ship ?d - Data ?u - UUV)
+        :precondition (and
+            (hasData ?u ?d)
+        )
+        :effect (and
+            (not (hasData ?u ?d))
+            (shipData ?f ?d)
+        )
+    )
+
+    (:action offloadSample
+        :parameters (?s - Sample ?w - Waypoint ?f - Ship ?u - UUV)
+        :precondition (and
+            (not 
+                (exists (?s - Sample) (shipSample ?f ?s))
+                ;Ensures that Ships can only hold 1 sample
+            )
+            (robotAt ?u ?w)
+            (shipLocation ?f ?w)
+            (hasSample ?u ?s)
+        )
+        :effect (and
+            (not (hasSample ?u ?s))
+            (shipSample ?f ?s)
+        )
     )
 
 )
