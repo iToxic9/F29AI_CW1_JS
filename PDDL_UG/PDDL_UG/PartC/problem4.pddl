@@ -8,19 +8,21 @@
         UUV1 UUV2 - UUV
         IMG1 IMG2 SCAN1 SCAN2 - Data
         SAMPLE1 SAMPLE2 - Sample
+
         Engineer1 - Engineer
-        ShipBay1 ShipBay2 - ShipBay
-        ShipControl1 ShipControl2 - ShipControl
+        ShipBay1 ShipControl1 - ShipModule
+        ShipBay_1
     )
 
     (:init
         (shipPath WP1 Ship_1)
-        (shipPath WP1 Ship_2)
+        ;(shipPath WP1 Ship_2)
         (shipPath Ship_1 WP1)
-        (shipPath Ship_2 WP1)
+        ;(shipPath Ship_2 WP1)
 
-        (path WP1 Ship_1)
         (path WP1 Ship_2)
+        (path Ship_2 WP1)
+
         (path WP1 WP2)
 
         (path WP2 WP1)
@@ -47,8 +49,8 @@
         (shipLocation Ship1 Ship_1)
         (shipLocation Ship2 Ship_2)
 
-        (EngineerLocation Engineer1 ShipBay1)
-        (shipHasEngineer Engineer1 Ship1)
+        (shipHasEngineer Ship1 Engineer1 ShipBay1)
+        (ModuleType ShipBay1 ShipBay_1)
 
         (robotAt UUV1 WP2)
         (robotAt UUV2 Ship_2)
