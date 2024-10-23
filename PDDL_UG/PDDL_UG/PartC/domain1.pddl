@@ -1,5 +1,5 @@
 (define (domain windfarm-1)
-    (:requirements :strips :typing :negative-preconditions)
+    (:requirements :strips :typing :negative-preconditions :disjunctive-preconditions)
 
     ; -------------------------------
     ; Types
@@ -11,9 +11,10 @@
         Waypoint
         Data
         Sample
+
         Engineer
-        ShipBay
-        ShipControl
+        ShipModule
+
     )
 
     ; -------------------------------
@@ -21,6 +22,7 @@
     ; -------------------------------
 
     (:predicates
+        
         (robotAt ?u - UUV ?w - Waypoint)
         (hasData ?u - UUV ?d - Data)
         (hasSample ?u - UUV ?s - Sample)
@@ -34,47 +36,55 @@
 
         (DataLocation ?d - Data ?w - Waypoint)
         (SampleLocation ?s - Sample ?w - Waypoint)
+        (shipHasEngineer ?f - Ship ?e - Engineer ?m - ShipModule)
+        (ModuleType ?m - ShipModule ?y)
 
-        (EngineerLocation ?e - Engineer ?m)
-        (shipHasEngineer ?e - Engineer ?f - Ship)
     )
 
     ; -------------------------------
     ; Actions
     ; -------------------------------
 
-    (:action ShipBayDoors
-        :parameters (?m - ShipBay ?u - UUV ?e - Engineer ?f - Ship ?a - Waypoint ?b - Waypoint)
-        :precondition (and
-            (shipHasEngineer ?f ?e)
-            (EngineerLocation ?e ?m)
-            (robotAt ?u ?a)
-            (shipLocation ?f ?a)
-            (shipPath ?a ?b)
+
+    (:action EngineerMoves
+        :parameters (
+            ?e - Engineer ?f - Ship ?m - ShipModule ?k - ShipModule 
         )
-        :effect (and
-            (not(robotAt ?u ?a))
+        :precondition (and 
+            (shipHasEngineer ?f ?e ?m)
+            (not (shipHasEngineer ?f ?e ?k))
+        )
+        :effect (and 
+            (shipHasEngineer ?f ?e ?k)
+            (not (shipHasEngineer ?f ?e ?m))
+        )
+    )
+
+    (:action ShipBayDoors
+        :parameters (
+            ?e - Engineer ?f - Ship ?m - ShipModule ?u - UUV ?w - Waypoint ?b - Waypoint ?y - ShipModule
+        )
+        :precondition (and 
+            (robotAt ?u ?w)
+            (shipHasEngineer ?f ?e ?m)
+            (ModuleType ?m ?y)
+            (shipPath ?w ?b)
+        )
+        :effect (and 
+            (not (robotAt ?u ?w))
             (robotAt ?u ?b)
         )
     )
-
-    (:action EngineerMoves
-        :parameters (?m ?e - Engineer ?f - Ship ?l)
-        :precondition (and
-           (EngineerLocation ?e ?f ?m)
-        )
-        :effect (and
-            (not(EngineerLocation ?e ?f ?m))
-            (EngineerLocation ?e ?f ?l)
-        )
-    )
-
+    
     (:action moveTo
-        :parameters (?f - Ship ?a - Waypoint ?b - Waypoint ?u - UUV )
+        :parameters (?f - Ship ?a - Waypoint ?b - Waypoint ?u - UUV ?e - Engineer ?m - ShipModule)
         :precondition (and
             (robotAt ?u ?a)
             (path ?a ?b)
-            (not (shipLocation ?f ?b))
+            (or
+                (not(shipLocation ?f ?b))
+                (and(shipLocation ?f ?b) (not(shipHasEngineer ?f ?e ?m)))
+            )
         )
         :effect (and
             (not(robotAt ?u ?a))
@@ -120,10 +130,9 @@
     )
 
     (:action sendData
-        :parameters (?e - Engineer ?f - Ship ?m - ShipControl ?d - Data ?u - UUV)
+        :parameters (?e - Engineer ?f - Ship ?m - ShipModule ?y - ShipControl ?d - Data ?u - UUV)
         :precondition (and
             (hasData ?u ?d)
-            (EngineerLocation ?e ?f ?m)
         )
         :effect (and
             (not (hasData ?u ?d))
