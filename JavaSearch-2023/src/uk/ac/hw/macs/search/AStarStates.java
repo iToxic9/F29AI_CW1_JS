@@ -17,10 +17,6 @@ public class AStarStates implements State {
 		this.goal = goal;
 	}
 
-    public int getfCost() {
-        return this.value;
-    }
-
 	@Override
 	public boolean isGoal() {
         return this.goal;
