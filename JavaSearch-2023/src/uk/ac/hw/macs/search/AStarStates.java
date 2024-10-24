@@ -1,5 +1,8 @@
 package uk.ac.hw.macs.search;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class AStarStates implements State {
 
     private int value;
@@ -14,6 +17,10 @@ public class AStarStates implements State {
 		this.goal = goal;
 	}
 
+    public int getfCost() {
+        return this.value;
+    }
+
 	@Override
 	public boolean isGoal() {
         return this.goal;
@@ -21,10 +28,7 @@ public class AStarStates implements State {
 
 	@Override
 	public int getHeuristic() {
-        int h;
-        //h = Math.abs(G.value - this.value))+Math.abs(G.value - this.value));
-        
-		return 0;
+		return this.value; //heuristic calculation done in AStar.java --> Create grid
 	}
 
 	@Override
