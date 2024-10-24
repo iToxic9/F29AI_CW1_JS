@@ -1,8 +1,5 @@
 package uk.ac.hw.macs.search;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class AStarStates implements State {
 
     private int value;
