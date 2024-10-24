@@ -56,13 +56,6 @@
         :parameters (?s - Sample ?w - Waypoint ?u - UUV)
         :precondition 
         (and
-            ; Commented out because I am unsure if a UUV can hold
-            ; more than one sample at a time. Not clarified in restrictions
-            ; Thus I will assume it can but just in case this would fix that.
-            ;
-            ;(not
-            ;    (exists (?s - Sample)(hasSample ?u ?s))
-            ;)
             (robotAt ?u ?w)
             (SampleLocation ?s ?w)
         )
